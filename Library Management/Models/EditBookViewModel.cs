@@ -13,7 +13,7 @@ namespace Library_Management.Models
         public string? Title { get; set; }
 
         [Required(ErrorMessage = "ISBN is required.")]
-        [Display(Name ="ABSCBN")]
+        [Display(Name ="ISBN")]
         public string? ISBN { get; set; }
 
         public string? Description { get; set; }
