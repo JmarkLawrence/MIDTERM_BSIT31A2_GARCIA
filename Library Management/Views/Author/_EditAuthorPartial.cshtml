@@ -1,0 +1,74 @@
+@model Library_Management.Models.EditAuthorViewModel
+
+<!-- Edit Author Modal - Part 1: Author Management -->
+<div class="modal-header bg-warning text-dark">
+    <h5 class="modal-title">
+        <i class="bi bi-pencil-fill me-2"></i>
+        Edit Author
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<form id="editAuthorForm" asp-action="Edit" method="post">
+    <input type="hidden" asp-for="AuthorId" />
+    
+    <div class="modal-body">
+        <div class="row g-3">
+            <!-- Author Name -->
+            <div class="col-12">
+                <label asp-for="Name" class="form-label fw-semibold">
+                    <i class="bi bi-person me-1 text-warning"></i>
+                    @Html.DisplayNameFor(m => m.Name) *
+                </label>
+                <input asp-for="Name" class="form-control" placeholder="Enter author's full name" />
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
+
+            <!-- Birth Date -->
+            <div class="col-md-6">
+                <label asp-for="BirthDate" class="form-label fw-semibold">
+                    <i class="bi bi-calendar-event me-1 text-warning"></i>
+                    @Html.DisplayNameFor(m => m.BirthDate)
+                </label>
+                <input asp-for="BirthDate" class="form-control" type="date" />
+                <span asp-validation-for="BirthDate" class="text-danger small"></span>
+            </div>
+
+            <!-- Profile Image URL -->
+            <div class="col-md-6">
+                <label asp-for="ProfileImageUrl" class="form-label fw-semibold">
+                    <i class="bi bi-image me-1 text-warning"></i>
+                    @Html.DisplayNameFor(m => m.ProfileImageUrl)
+                </label>
+                <input asp-for="ProfileImageUrl" class="form-control" placeholder="https://example.com/image.jpg" />
+                <span asp-validation-for="ProfileImageUrl" class="text-danger small"></span>
+            </div>
+
+            <!-- Biography -->
+            <div class="col-12">
+                <label asp-for="Biography" class="form-label fw-semibold">
+                    <i class="bi bi-journal-text me-1 text-warning"></i>
+                    @Html.DisplayNameFor(m => m.Biography)
+                </label>
+                <textarea asp-for="Biography" class="form-control" rows="4" 
+                          placeholder="Enter author's biography, achievements, and background..."></textarea>
+                <div class="form-text">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Maximum 1000 characters
+                </div>
+                <span asp-validation-for="Biography" class="text-danger small"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer bg-light border-0">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>
+            Cancel
+        </button>
+        <button type="submit" class="btn btn-warning">
+            <i class="bi bi-check-circle me-1"></i>
+            Update Author
+        </button>
+    </div>
+</form>

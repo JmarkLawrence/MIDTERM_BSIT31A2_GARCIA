@@ -16,6 +16,10 @@ namespace Library_Management_Domain.Entities
         public string? Genre { get;set; } = default!;
         public DateTime? PublishedDate { get; set; } = default!;
 
+        // Archive functionality - Part 3
+        public bool IsArchived { get; set; } = false;
+        public DateTime? ArchivedDate { get; set; }
+        public string? ArchiveReason { get; set; }
     }
 
     public class BookCopy
@@ -40,6 +44,11 @@ namespace Library_Management_Domain.Entities
         public string? Biography { get; set; } = default!;
         public DateTime? BirthDate { get; set; } = default!;
         public string? ProfileImageUrl { get; set; } = default!;
+
+        // Archive functionality - Part 3
+        public bool IsArchived { get; set; } = false;
+        public DateTime? ArchivedDate { get; set; }
+        public string? ArchiveReason { get; set; }
 
         public List<Book> Books { get; set; } = [];
     }

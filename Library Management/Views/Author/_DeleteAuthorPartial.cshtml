@@ -1,0 +1,128 @@
+@model Library_Management.Models.AuthorDetailsViewModel
+
+<!-- Delete Author Modal - Part 1: Author Management -->
+<div class="modal-header bg-danger text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        Delete Author
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+    <!-- Warning Message -->
+    <div class="alert alert-danger border-0 mb-4">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill me-2" style="font-size: 1.5rem;"></i>
+            <div>
+                <strong>Warning!</strong> This action cannot be undone.
+            </div>
+        </div>
+    </div>
+
+    <!-- Author Information -->
+    <div class="row align-items-center mb-4">
+        <div class="col-auto">
+            @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+            {
+                <img src="@Model.ProfileImageUrl" alt="@Model.Name" 
+                     class="rounded-circle shadow-sm"
+                     style="width: 60px; height: 60px; object-fit: cover;" />
+            }
+            else
+            {
+                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center shadow-sm"
+                     style="width: 60px; height: 60px;">
+                    <i class="bi bi-person text-muted" style="font-size: 1.5rem;"></i>
+                </div>
+            }
+        </div>
+        <div class="col">
+            <h5 class="mb-1 fw-bold">@Model.Name</h5>
+            @if (Model.BirthDate.HasValue)
+            {
+                <small class="text-muted">Born @Model.BirthDate.Value.ToString("MMMM dd, yyyy")</small>
+            }
+        </div>
+    </div>
+
+    <!-- Books Check -->
+    @if (Model.TotalBooks > 0)
+    {
+        <div class="alert alert-warning border-0">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>
+                <div>
+                    <strong>Cannot Delete!</strong> 
+                    This author has <strong>@Model.TotalBooks book@(Model.TotalBooks > 1 ? "s" : "")</strong> associated with them.
+                    <br><small>Please remove or reassign the books first before deleting the author.</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- List of books -->
+        <div class="mt-3">
+            <h6 class="fw-semibold">Associated Books:</h6>
+            <ul class="list-group list-group-flush">
+                @foreach (var book in Model.Books.Take(5))
+                {
+                    <li class="list-group-item px-0 py-2 border-0">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-book me-2 text-primary"></i>
+                            <span>@book.Title</span>
+                        </div>
+                    </li>
+                }
+                @if (Model.Books.Count > 5)
+                {
+                    <li class="list-group-item px-0 py-2 border-0">
+                        <small class="text-muted">... and @(Model.Books.Count - 5) more books</small>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info border-0">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <div>
+                    This author has no books associated with them and can be safely deleted.
+                </div>
+            </div>
+        </div>
+        
+        <p class="mb-0">
+            Are you sure you want to delete <strong>@Model.Name</strong>? 
+            This action will permanently remove the author from the system.
+        </p>
+    }
+</div>
+
+<div class="modal-footer bg-light border-0">
+    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+        <i class="bi bi-x-circle me-1"></i>
+        Cancel
+    </button>
+    
+    @if (Model.TotalBooks > 0)
+    {
+        <!-- Cannot delete - show disabled button -->
+        <button type="button" class="btn btn-danger" disabled>
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Cannot Delete
+        </button>
+    }
+    else
+    {
+        <!-- Can delete - show active delete button -->
+        <form id="deleteAuthorForm" asp-action="Delete" method="post" class="d-inline">
+            <input type="hidden" name="id" value="@Model.AuthorId" />
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash me-1"></i>
+                Delete Author
+            </button>
+        </form>
+    }
+</div>

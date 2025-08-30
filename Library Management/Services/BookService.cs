@@ -258,24 +258,7 @@ public class BookService
 
 
 
-    public IEnumerable<BookListViewModel> GetBooks()
-    {
-        return _books.Select(b => new BookListViewModel
-        {
-            BookId = b.Id,
-            Title = b.Title,
-            ISBN = b.ISBN,
-            Description = b.Description,
-            Genre = b.Genre,
-            
-            PublishedDate = b.PublishedDate,
-            CoverImageUrl = _bookCopies.FirstOrDefault(bi => bi.Book.Id == b.Id)?.CoverImageUrl,
-            AuthorName = _authors.FirstOrDefault(a => a.Books.Any(bk => bk.Id == b.Id))?.Name,
-            AuthorProfileImageUrl = _authors.FirstOrDefault(a => a.Books.Any(bk => bk.Id == b.Id))?.ProfileImageUrl,
-            TotalCopies = _bookCopies.Count(bi => bi.Book.Id == b.Id),
-            AvailableCopies = _bookCopies.Count(bi => bi.Book.Id == b.Id && bi.PulloutDate == null)
-        });
-    }
+    // Method removed - replaced with overloaded version that supports archive filtering
 
     public EditBookViewModel GetBookById(Guid id)
     {
@@ -446,6 +429,158 @@ public class BookService
 
         _bookCopies.Add(newCopy);
     }
+
+    #region Collection Access Methods - For AuthorService Integration
+
+    /// <summary>
+    /// Get authors collection for AuthorService
+    /// </summary>
+    /// <returns>Authors collection</returns>
+    public ICollection<Author> GetAuthorsCollection()
+    {
+        return _authors;
+    }
+
+    /// <summary>
+    /// Get books collection for AuthorService
+    /// </summary>
+    /// <returns>Books collection</returns>
+    public ICollection<Book> GetBooksCollection()
+    {
+        return _books;
+    }
+
+    /// <summary>
+    /// Get book copies collection for AuthorService
+    /// </summary>
+    /// <returns>Book copies collection</returns>
+    public ICollection<BookCopy> GetBookCopiesCollection()
+    {
+        return _bookCopies;
+    }
+
+    #endregion
+
+    #region Pullout Functionality - Part 2
+
+    /// <summary>
+    /// Pull out a book copy from circulation
+    /// </summary>
+    /// <param name="model">PulloutBookCopyViewModel</param>
+    /// <returns>True if successful</returns>
+    public bool PulloutBookCopy(PulloutBookCopyViewModel model)
+    {
+        ArgumentNullException.ThrowIfNull(model, nameof(model));
+
+        var bookCopy = _bookCopies.FirstOrDefault(bc => bc.Id == model.BookCopyId);
+        if (bookCopy == null)
+            return false;
+
+        // Set pullout information
+        bookCopy.PulloutDate = DateTime.Now;
+        bookCopy.PulloutReason = model.PulloutReason;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Get book copies for a specific book (including pullout status)
+    /// </summary>
+    /// <param name="bookId">Book ID</param>
+    /// <returns>List of book copies with pullout information</returns>
+    public IEnumerable<BookCopyDetailsViewModel> GetBookCopiesDetails(Guid bookId)
+    {
+        return _bookCopies.Where(bc => bc.Book?.Id == bookId)
+            .Select(bc => new BookCopyDetailsViewModel
+            {
+                CopyId = bc.Id,
+                BookId = bookId,
+                Condition = bc.Condition ?? "Unknown",
+                Source = bc.Source ?? "Unknown",
+                AddedDate = bc.AddedDate ?? DateTime.Now,
+                PulloutDate = bc.PulloutDate,
+                PulloutReason = bc.PulloutReason,
+                IsAvailable = bc.PulloutDate == null,
+                CoverImageUrl = bc.CoverImageUrl
+            }).OrderByDescending(bc => bc.AddedDate);
+    }
+
+    #endregion
+
+    #region Archive Functionality - Part 3
+
+    /// <summary>
+    /// Archive a book (soft delete)
+    /// </summary>
+    /// <param name="id">Book ID</param>
+    /// <param name="reason">Archive reason</param>
+    /// <returns>True if successful</returns>
+    public bool ArchiveBook(Guid id, string reason)
+    {
+        var book = _books.FirstOrDefault(b => b.Id == id);
+        if (book == null)
+            return false;
+
+        book.IsArchived = true;
+        book.ArchivedDate = DateTime.Now;
+        book.ArchiveReason = reason;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Restore archived book
+    /// </summary>
+    /// <param name="id">Book ID</param>
+    /// <returns>True if successful</returns>
+    public bool RestoreBook(Guid id)
+    {
+        var book = _books.FirstOrDefault(b => b.Id == id);
+        if (book == null)
+            return false;
+
+        book.IsArchived = false;
+        book.ArchivedDate = null;
+        book.ArchiveReason = null;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Get books excluding archived ones
+    /// </summary>
+    /// <param name="includeArchived">Include archived books</param>
+    /// <returns>List of BookListViewModel</returns>
+    public IEnumerable<BookListViewModel> GetBooks(bool includeArchived = false)
+    {
+        var booksQuery = includeArchived ? _books : _books.Where(b => !b.IsArchived);
+
+        return booksQuery.Select(b => new BookListViewModel
+        {
+            BookId = b.Id,
+            Title = b.Title,
+            ISBN = b.ISBN,
+            Description = b.Description,
+            Genre = b.Genre,
+            PublishedDate = b.PublishedDate,
+            CoverImageUrl = _bookCopies.FirstOrDefault(bi => bi.Book.Id == b.Id)?.CoverImageUrl,
+            AuthorName = _authors.FirstOrDefault(a => a.Books.Any(bk => bk.Id == b.Id))?.Name,
+            AuthorProfileImageUrl = _authors.FirstOrDefault(a => a.Books.Any(bk => bk.Id == b.Id))?.ProfileImageUrl,
+            TotalCopies = _bookCopies.Count(bi => bi.Book.Id == b.Id),
+            AvailableCopies = _bookCopies.Count(bi => bi.Book.Id == b.Id && bi.PulloutDate == null)
+        });
+    }
+
+    /// <summary>
+    /// Get archived books
+    /// </summary>
+    /// <returns>List of archived books</returns>
+    public IEnumerable<BookListViewModel> GetArchivedBooks()
+    {
+        return GetBooks(includeArchived: true).Where(b => _books.First(book => book.Id == b.BookId).IsArchived);
+    }
+
+    #endregion
 
 
 }

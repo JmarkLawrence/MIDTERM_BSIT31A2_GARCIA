@@ -131,5 +131,65 @@ namespace Library_Management.Controllers
             }
         }
 
+        #region Pullout Functionality - Part 2
+
+        /// <summary>
+        /// Display Pullout Book Copy modal
+        /// </summary>
+        /// <param name="copyId">Book Copy ID</param>
+        /// <returns>Pullout modal partial view</returns>
+        public IActionResult PulloutModal(Guid copyId)
+        {
+            // Get book copy details to populate the modal
+            var bookCopies = BookService.Instance.GetBookCopiesDetails(Guid.Empty);
+            var bookCopy = bookCopies.FirstOrDefault(bc => bc.CopyId == copyId);
+            
+            if (bookCopy == null)
+                return NotFound();
+
+            var book = BookService.Instance.GetBooks().FirstOrDefault(b => b.BookId == bookCopy.BookId);
+            if (book == null)
+                return NotFound();
+
+            var model = new PulloutBookCopyViewModel
+            {
+                BookCopyId = copyId,
+                BookId = bookCopy.BookId,
+                BookTitle = book.Title ?? "Unknown Title",
+                PulloutReason = "Damaged" // Default reason
+            };
+
+            return PartialView("_PulloutBookCopyPartial", model);
+        }
+
+        /// <summary>
+        /// Process Pullout Book Copy request
+        /// </summary>
+        /// <param name="model">PulloutBookCopyViewModel</param>
+        /// <returns>Success or error response</returns>
+        [HttpPost]
+        public IActionResult PulloutBookCopy(PulloutBookCopyViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var success = BookService.Instance.PulloutBookCopy(model);
+                if (!success)
+                    return NotFound();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        #endregion
+
     }
 }

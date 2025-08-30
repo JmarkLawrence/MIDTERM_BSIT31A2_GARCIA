@@ -1,0 +1,155 @@
+@model Library_Management.Models.PulloutBookCopyViewModel
+
+<!-- Pullout Book Copy Modal - Part 2: Pullout Functionality -->
+<div class="modal-header bg-warning text-dark">
+    <h5 class="modal-title">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        Pull Out Book Copy
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<form id="pulloutBookCopyForm" asp-action="PulloutBookCopy" method="post">
+    <input type="hidden" asp-for="BookCopyId" />
+    <input type="hidden" asp-for="BookId" />
+    <input type="hidden" asp-for="BookTitle" />
+    
+    <div class="modal-body">
+        <!-- Book Information Display -->
+        <div class="alert alert-info border-0 mb-4">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-book-fill me-2" style="font-size: 1.5rem;"></i>
+                <div>
+                    <strong>Book:</strong> @Model.BookTitle
+                    <br><small class="text-muted">This copy will be removed from circulation</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <!-- Pullout Reason -->
+            <div class="col-12">
+                <label asp-for="PulloutReason" class="form-label fw-semibold">
+                    <i class="bi bi-clipboard-x me-1 text-warning"></i>
+                    @Html.DisplayNameFor(m => m.PulloutReason) *
+                </label>
+                <select asp-for="PulloutReason" class="form-select">
+                    <option value="Damaged">Damaged</option>
+                    <option value="Lost">Lost</option>
+                    <option value="Outdated">Outdated</option>
+                    <option value="Worn Out">Worn Out</option>
+                    <option value="Missing Pages">Missing Pages</option>
+                    <option value="Water Damage">Water Damage</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Inventory Check">Inventory Check</option>
+                    <option value="Other">Other</option>
+                </select>
+                <span asp-validation-for="PulloutReason" class="text-danger small"></span>
+            </div>
+
+            <!-- Additional Notes -->
+            <div class="col-12">
+                <label asp-for="Notes" class="form-label fw-semibold">
+                    <i class="bi bi-journal-text me-1 text-warning"></i>
+                    @Html.DisplayNameFor(m => m.Notes)
+                </label>
+                <textarea asp-for="Notes" class="form-control" rows="3" 
+                          placeholder="Enter additional details about the pullout (optional)..."></textarea>
+                <div class="form-text">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Provide specific details about the condition or reason for pullout
+                </div>
+                <span asp-validation-for="Notes" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <!-- Warning Section -->
+        <div class="mt-4">
+            <div class="alert alert-warning border-0">
+                <h6 class="alert-heading d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Important Notice
+                </h6>
+                <ul class="mb-0 small">
+                    <li>This book copy will be marked as <strong>unavailable</strong> for checkout</li>
+                    <li>The pullout date will be set to <strong>@DateTime.Now.ToString("MMM dd, yyyy")</strong></li>
+                    <li>This action can help track inventory and maintenance needs</li>
+                    <li>The copy will remain in the system for record-keeping purposes</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="mt-4">
+            <h6 class="fw-semibold mb-3">
+                <i class="bi bi-eye me-1 text-warning"></i>
+                Pullout Summary
+            </h6>
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center" 
+                                 style="width: 50px; height: 50px; color: white;">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h6 class="mb-1">@Model.BookTitle</h6>
+                            <div class="d-flex gap-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar-x me-1"></i>
+                                    Pullout Date: @DateTime.Now.ToString("MMM dd, yyyy")
+                                </small>
+                                <small class="text-muted">
+                                    <i class="bi bi-clipboard-x me-1"></i>
+                                    <span id="reasonPreview">@Model.PulloutReason</span>
+                                </small>
+                            </div>
+                            <small class="text-muted">
+                                <i class="bi bi-dash-circle me-1"></i>
+                                Status: <span class="text-warning fw-semibold">Out of Circulation</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer bg-light border-0">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>
+            Cancel
+        </button>
+        <button type="submit" class="btn btn-warning">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Pull Out Copy
+        </button>
+    </div>
+</form>
+
+<script>
+    // Update preview when pullout reason changes
+    document.addEventListener('DOMContentLoaded', function() {
+        const reasonSelect = document.querySelector('select[name="PulloutReason"]');
+        const reasonPreview = document.getElementById('reasonPreview');
+        
+        reasonSelect?.addEventListener('change', function() {
+            reasonPreview.textContent = this.value;
+        });
+    });
+</script>
+
+<style>
+    .form-select:focus,
+    .form-control:focus {
+        border-color: #ffc107;
+        box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+    }
+    
+    .alert-warning {
+        background-color: #fff3cd;
+        border-color: #ffeaa7;
+    }
+</style>
